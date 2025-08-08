@@ -1,0 +1,9 @@
+__pycache__/
+.ipynb_checkpoints/
+*.npz
+*.csv
+*.png
+outputs/
+.DS_Store
+.vscode/
+biasenv/
