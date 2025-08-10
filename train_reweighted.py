@@ -10,14 +10,14 @@ import numpy as np
 import json
 weights_path = "outputs/results/sample_weights.json"
 
-# --- Load Preprocessed Data ---
+# Load Preprocessed Data 
 X_train, X_test, y_train, y_test, s_train, s_test = preprocessing_data(df)
 
 feature_names = get_feature_names(df)
 
-#compute_save_sample_weights(X_train, y_train, s_train, feature_names)
+compute_save_sample_weights(X_train, y_train, s_train, feature_names)
 
-# --- Load Precomputed Sample Weights ---
+# Load Precomputed Sample Weights
 if os.stat(weights_path).st_size == 0:
     print("Weights file empty...generating weights...")
     compute_save_sample_weights(X_train, y_train, s_train, feature_names)

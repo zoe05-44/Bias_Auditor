@@ -65,6 +65,6 @@ def tune_gradient_boosting(model_name,X_train, y_train, X_test, y_test, s_test, 
         sensitive_features=s_test,
         output_path="outputs/fairness_report.csv"
     )
-    #s.save_metrics(fairness_df, model_name)
+    s.save_metrics(fairness_df, model_name)
     return fairness_df
 
