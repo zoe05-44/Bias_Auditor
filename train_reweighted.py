@@ -1,5 +1,6 @@
 from process_data import preprocessing_data, get_feature_names
 from data import df
+from utils import save_output as s
 from sklearn.model_selection import StratifiedKFold
 import os
 from utils import models as m
@@ -35,7 +36,6 @@ models = m.models_baseline
 for name, model in models.items():
     print(f"\n{name} | Training with reweighting...")
 
-    # Train with sample weights
     model.fit(X_train, y_train, sample_weight=sample_weights)
 
 
@@ -48,10 +48,8 @@ for name, model in models.items():
         s_test
     )
 
-
-
-    # Save result
-    """s.save_model_result(
+    #Save result
+    s.save_model_result(
         name + "_reweighted",
         result,
-        path=f"outputs/results/{name}_reweighted.json")"""
+        path=f"outputs/results/{name}_reweighted.json")

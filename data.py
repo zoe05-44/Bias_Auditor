@@ -10,18 +10,17 @@ def fetch_dataset():
         'native-country', 'income'
     ]
 
-    # 2. Define the path to your local CSV file.
+    # Define the path to CSV file.
     file_path = 'adult.csv'
 
-    # 3. Read the CSV file into a pandas DataFrame.
     try:
         df = pd.read_csv(
             file_path,
-            header=None,           # Tell pandas there is no header row in the file.
-            names=column_names,    # Provide our list of column names.
-            sep=r',\s*',           # This handles the inconsistent spacing after the commas.
-            engine='python',       # The 'python' engine is needed for the separator above.
-            na_values='?'          # Automatically recognize '?' as a missing value.
+            header=None,           
+            names=column_names,    
+            sep=r',\s*',           
+            engine='python',       
+            na_values='?'          
         )
         print("Successfully loaded data from 'data/adult.csv'.")
         print("DataFrame shape:", df.shape)
@@ -31,8 +30,6 @@ def fetch_dataset():
     except FileNotFoundError:
         print(f"Error: The file was not found at '{file_path}'.")
         print("Please make sure you have created the file 'adult.csv'")
-    """adult = fetch_ucirepo(id=2) 
-    return adult.data.original
-df = fetch_dataset()"""
+
 
 df = fetch_dataset()

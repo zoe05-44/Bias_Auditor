@@ -38,3 +38,56 @@ def evaluate_high_income_women(npz_path, label):
         "recall": report["1"]["recall"],
         "f1": report["1"]["f1-score"]
     }
+
+def explore_occupation_with_bias(df, occupation):
+    occ_df = df[df['occupation'] == occupation]
+    if occ_df.empty:
+        print(f"No data found for occupation: {occupation}")
+        return
+    
+    print(f"\n=== Occupation: {occupation} ===")
+    
+    print("\nSex distribution:")
+    print(occ_df['sex'].value_counts(normalize=True))
+    
+    # Sex by labor effort group 
+    print("\nSex by labor effort group:")
+    print(occ_df.groupby('labor_effort_group')['sex'].value_counts(normalize=True))
+    
+    # Income distribution by effort & sex 
+    print("\nIncome distribution by effort & sex:")
+    print(occ_df.groupby(['labor_effort_group', 'sex'])['income'].value_counts(normalize=True))
+    
+    # Bias score calculation 
+    p = occ_df['sex'].value_counts(normalize=True)
+    female = occ_df[occ_df['sex'] == 'Female']
+    male = occ_df[occ_df['sex'] == 'Male']
+    
+    p_f = p.get('Female', 0)
+    r_f = len(female[female['income'] == '>50K']) / len(female) if len(female) > 0 else 0
+    r_m = len(male[male['income'] == '>50K']) / len(male) if len(male) > 0 else 0
+    
+    bin_weights = {'low': 0.33, 'normal': 0.66, 'high': 1.0}
+    def compute_effort_score(group):
+        proportions = group['labor_effort_group'].value_counts(normalize=True)
+        return sum(bin_weights.get(bin_label, 0) * proportions.get(bin_label, 0) for bin_label in bin_weights)
+    
+    e_f = compute_effort_score(female)
+    e_m = compute_effort_score(male)
+    
+    numerator = r_f * e_f
+    denominator = numerator + (r_m * e_m)
+    score = numerator / denominator if denominator != 0 else None
+    
+    print("\n--- Bias Score ---")
+    if score is None:
+        print("Bias Score could not be computed")
+    else:
+        print(f"Bias Score: {score:.2f} | Female Representation: {p_f:.2f}")
+        if score < p_f:
+            print("→ Women are underrewarded relative to representation and effort")
+        elif score > p_f:
+            print("→ Women are rewarded more than representation and effort")
+        else:
+            print("→ Reward proportional to representation and effort")
+
