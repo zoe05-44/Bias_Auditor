@@ -82,6 +82,3 @@ bias_auditor/
 * **Matplotlib, Seaborn** — visualization
 * **scikit-learn** — machine learning models & metrics
 * **Jupyter Notebook** — analysis & experimentation
-
-If you want, I can also write you the `.gitignore` so your `outputs/` folder stops getting tracked.
-
