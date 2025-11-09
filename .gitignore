@@ -3,6 +3,7 @@ __pycache__/
 *.npz
 *.csv
 *.png
+*.json
 outputs/
 .DS_Store
 .vscode/
