@@ -9,22 +9,38 @@ from reweighting import compute_save_sample_weights
 import numpy as np
 import json
 weights_path = "outputs/results/sample_weights.json"
+splits_path = "outputs/preds/train_test_split.npz"
 
 # Load Preprocessed Data 
-X_train, X_test, y_train, y_test, s_train, s_test = preprocessing_data(df)
+if not os.path.exists(splits_path):
+    print(f"ERROR: Splits file not found at {splits_path}")
+    exit(1)
+print("Loading train/test splits...")
+splits = np.load(splits_path)
+X_train = splits['X_train']
+X_test = splits['X_test']
+y_train = splits['y_train']
+y_test = splits['y_test']
+s_train = splits['s_train']
+s_test = splits['s_test']
+
+print(f"✓ Loaded splits - Train size: {len(X_train)}, Test size: {len(X_test)}")
 
 feature_names = get_feature_names(df)
 
-compute_save_sample_weights(X_train, y_train, s_train, feature_names)
-
 # Load Precomputed Sample Weights
-if os.stat(weights_path).st_size == 0:
+if os.path.exists(weights_path) and os.stat(weights_path).st_size > 0:
+    with open(weights_path, "r") as o:
+        data = json.load(o)    
+else:
     print("Weights file empty...generating weights...")
     compute_save_sample_weights(X_train, y_train, s_train, feature_names)
 
-with open(weights_path, "r") as o:
-    data = json.load(o)
-    sample_weights = np.array(data["sample_weights"])
+    with open(weights_path, "r") as o:
+        data = json.load(o)
+
+
+sample_weights = np.array(data["sample_weights"])
 
 # Cross Validation Setup
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)

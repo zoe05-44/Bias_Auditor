@@ -5,12 +5,19 @@ from utils import save_output as s
 from utils import models as m
 from utils import fairness_metrics as f
 import numpy as np
+import os
 
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
 
 #Main execution
 X_train, X_test, y_train, y_test, s_train, s_test = preprocessing_data(df)
+
+if not os.path.exists('outputs/preds/train_test_split.npz'):
+    print("Saving train/test splits for the first time...")
+    s.save_train_test(X_train, X_test, y_train, y_test, s_train, s_test)
+else:
+    print(f"✓ Using existing splits - Test size: {len(X_test)}")
 
 models = m.models_smote
 

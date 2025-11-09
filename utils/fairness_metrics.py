@@ -24,8 +24,10 @@ def evaluate_model(model,model_name, X_train, y_train, X_test, y_test, s_test):
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
 
+    y_pred_proba = model.predict_proba(X_test)[:,1]
+
     #save predictions
-    s.save_predictions_npz(y_test, y_pred, s_test, path=f"outputs/preds/{model_name}_preds.npz")
+    s.save_predictions_npz(y_test, y_pred, s_test, path=f"outputs/preds/{model_name}_preds.npz",y_pred_proba=y_pred_proba)
 
     # Save fairness metrics for every model
     fairness_df = compute_fairness(
@@ -53,6 +55,12 @@ def tune_gradient_boosting(model_name,X_train, y_train, X_test, y_test, s_test, 
     print(grid.best_params_)
 
     y_pred = grid.best_estimator_.predict(X_test)
+    y_pred_proba = grid.best_estimator_.predict_proba(X_test)[:, 1]
+
+    s.save_predictions_npz(y_test, y_pred, s_test, 
+                          path=f"outputs/preds/{model_name}_tuned_preds.npz",
+                          y_pred_proba=y_pred_proba)
+
     print("Test set evaluation after tuning:")
     print(classification_report(y_test, y_pred))
     print("Confusion matrix:")

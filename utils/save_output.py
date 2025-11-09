@@ -10,12 +10,12 @@ def save_metrics(metrics_dict, model_name, path=None):
     if hasattr(metrics_dict, "to_dict"):
         metrics_dict = metrics_dict.to_dict()
     
-        if os.path.exists(path):
-            with open(path, 'r') as f:
-                try:
-                    existing_data = json.load(f)
-                except json.JSONDecodeError:
-                    existing_data = {}
+    if os.path.exists(path):
+        with open(path, 'r') as f:
+            try:
+                existing_data = json.load(f)
+            except json.JSONDecodeError:
+                existing_data = {}
     else:
         existing_data = {}
 
@@ -26,10 +26,13 @@ def save_metrics(metrics_dict, model_name, path=None):
         
   
 
-def save_predictions_npz(y_test, y_pred, sensitive_features, path):
+def save_predictions_npz(y_test, y_pred, sensitive_features, path, y_pred_proba=None):
     print('searching for file')
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    np.savez(path, y_test=y_test, y_pred=y_pred, s_test=sensitive_features)
+    if y_pred_proba is not None: 
+        np.savez(path, y_test=y_test, y_pred=y_pred,y_pred_proba=y_pred_proba, s_test=sensitive_features)
+    else:
+        np.savez(path, y_test=y_test, y_pred=y_pred, s_test=sensitive_features)
     print('Data added to file')
 
 def save_model_result(model_name, report, path):
@@ -37,3 +40,18 @@ def save_model_result(model_name, report, path):
     data = {model_name: report}
     with open(path, 'w') as f:
         json.dump(data, f, indent=4)
+
+
+def save_train_test(X_train, X_test, y_train, y_test, s_train, s_test):
+    path = 'outputs/preds/train_test_split.npz'
+
+    print(f"Train size: {len(X_train)}")
+    print(f"Test size: {len(X_test)}")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    np.savez(path,
+            X_train=X_train, X_test=X_test,
+            y_train=y_train, y_test=y_test,
+            s_train=s_train, s_test=s_test)
+
+    print("Splits saved to outputs/preds/train_test_split.npz")

@@ -4,7 +4,7 @@ import json
 
 def compute_save_sample_weights(X_train, y_train, s_train, feature_names, save_path="outputs/results/sample_weights.json"):
     """
-    Compute inverse probability sample weights and save to a JSON file.
+    Compute targeted probability sample weights and save to a JSON file.
     
     Args:
         X_train (array-like): Feature matrix.
@@ -19,26 +19,46 @@ def compute_save_sample_weights(X_train, y_train, s_train, feature_names, save_p
     
     X_train_df = pd.DataFrame(X_train, columns=feature_names)
     train_df = X_train_df.copy()
-    train_df['income'] = y_train.values
-    train_df['sex'] = s_train.values
+
+    train_df['income'] = y_train
+    train_df['sex'] = s_train
+
+
+    # Assign weight to be 1 initially and boosted later 
+    train_df['weight'] = 1.0
+
+    #Boosted Group
+    mask = (train_df['income'] ==1) & (train_df['sex'] == 0)
+    ref_group = (train_df['income'] ==1) & (train_df['sex'] ==1)
+    target_count= int(mask.sum())
+    ref_count = int(ref_group.sum())
+    n= len(train_df)
+    target_prop = target_count/n
+
+    print(f'Target Proportion: {target_prop}')
+    boost_factor =  ref_count/target_count
+    train_df.loc[mask, 'weight'] = boost_factor
     
-    # Compute (group, label) joint probability
-    group_counts = train_df.groupby(['sex', 'income']).size()
-    joint_prob = group_counts / len(train_df)
-    
-    # Step 3: Assign inverse probability weights
-    train_df['weight'] = train_df.apply(
-        lambda row: 1 / joint_prob[(row['sex'], row['income'])],
-        axis=1
-    )
-    
-    #Normalize weights to sum to 1
-    train_df['weight'] /= train_df['weight'].sum()
-    
-    #Convert weights to list and save as JSON
+    #Normalize weights to sum to n
+    train_df['weight'] = train_df['weight']*n / train_df['weight'].sum()
+
+    print(f'Total Sample: {n}')
+    comp = train_df.groupby(['sex', 'income'])['weight'].sum()
+    print(comp)
+    target_effective_count = float(comp[(0,1)])
     sample_weights = train_df['weight'].tolist()
+
+
+
+    #Convert weights to list and save as JSON
+    reweighed = {'strategy': 'targeted_reweighting_high_income_women'}
+    reweighed['sample_weights'] = sample_weights
+    reweighed['boost_factor'] = boost_factor
+    reweighed['target_group_count'] = target_count
+    reweighed['target_group_effective_count'] =target_effective_count
     with open(save_path, 'w') as f:
-        json.dump({'sample_weights': sample_weights}, f)
+         json.dump(reweighed, f)
     
     print(f"Sample weights saved to: {save_path}")
+    
     return np.array(sample_weights)
